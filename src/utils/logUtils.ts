@@ -22,7 +22,7 @@ export const prepareTimeSeriesData = (logs: LogEntry[]): TimeSeriesData[] => {
   // Find the time range from the logs
   const timestamps = logs.map(log => new Date(log.timestamp).getTime());
   const latestTime = Math.max(...timestamps);
-  const earliestTime = Math.max(latestTime - (24 * 60 * 60 * 1000), Math.min(...timestamps));
+  const earliestTime = Math.max(latestTime - (24 / 2 * 60 * 60 * 1000), Math.min(...timestamps));
   
   // Initialize time slots based on the log data's time range - 10 minute increments
   for (let time = earliestTime; time <= latestTime; time += 600000) { // 10 minutes = 600000ms
