@@ -67,8 +67,7 @@ describe('LogEntryComponent', () => {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: true,
-        timeZone: 'America/New_York'
+        hour12: true
       });
 
       // Find the time element
@@ -103,8 +102,7 @@ describe('LogEntryComponent', () => {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false,
-        timeZone: 'America/New_York'
+        hour12: false
       });
 
       // Find the time element
