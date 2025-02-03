@@ -14,7 +14,7 @@ on:
       - 'tests/utils/logUtils.test.ts'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -195,13 +195,43 @@ jobs:
                         "side": "RIGHT"
                     }
 
-                2. Use gh api command to post the comment:
+                2. Use gh api commands in this order:
+                    # First create the review
+                    echo "{\"event\":\"COMMENT\",\"body\":\"Dashboard regression review\"}" > review.json
+                    REVIEW_ID=$(gh api \
+                      --method POST \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "Authorization: Bearer $GITHUB_TOKEN" \
+                      "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
+                      --input review.json | jq -r '.id')
+
+                    # Then add the detailed comment
+                    cat > comment.json << 'EOL'
+                    {
+                        "body": "Test Failures in LogEntryComponent:\n\n1. 'matches snapshot with 12-hour format'\n2. 'matches snapshot with 24-hour format'\n\nExpected: '2/20/2024, 10:00:00 AM'\nReceived: '2/20/2024, 03:00:00 PM'\n\n```suggestion\n    return date.toLocaleString(use24Hour ? 'en-GB' : 'en-US', {\n      year: 'numeric',\n      month: 'numeric',\n      day: 'numeric',\n      hour: '2-digit',\n      minute: '2-digit',\n      second: '2-digit',\n      hour12: !use24Hour\n    });\n```\n\nThe 5-hour difference is caused by the timezone setting. Removing the timeZone property will fix this by using the local timezone as expected by the tests.",
+                        "commit_id": "$HEAD_SHA",
+                        "path": "src/components/logs/LogEntry.tsx",
+                        "position": 50,
+                        "side": "RIGHT"
+                    }
+                    EOL
+
+                    # Post the comment
                     gh api \
                       --method POST \
                       -H "Accept: application/vnd.github+json" \
                       -H "Authorization: Bearer $GITHUB_TOKEN" \
-                      "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments" \
+                      "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/comments" \
                       --input comment.json
+
+                    # Submit the review
+                    echo "{\"event\":\"COMMENT\"}" > submit.json
+                    gh api \
+                      --method POST \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "Authorization: Bearer $GITHUB_TOKEN" \
+                      "/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/events" \
+                      --input submit.json
 
                 Note: The position parameter is a number indicating the position in the diff where you want to add the comment.
                 You can find this by looking at the line numbers in the diff data: ${{ steps.pr-files.outputs.diffs }}
