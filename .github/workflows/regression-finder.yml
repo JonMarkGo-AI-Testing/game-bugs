@@ -1,4 +1,4 @@
-name: Automated PR Review
+name: Regression Finder
 
 on:
   pull_request:
