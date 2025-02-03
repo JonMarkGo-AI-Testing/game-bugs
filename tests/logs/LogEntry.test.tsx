@@ -20,7 +20,9 @@ jest.mock('../../src/components/logs/SeverityBadge', () => ({
 
 describe('LogEntryComponent', () => {
   describe('snapshot tests', () => {
-    const testDate = new Date('2024-02-20T15:00:00Z');
+    // Create date in EST timezone to match jest.setup.js configuration
+    const testDate = new Date('2024-02-20T15:00:00.000Z');
+    testDate.setTime(testDate.getTime() + (testDate.getTimezoneOffset() * 60000));
     const mockLog: LogEntry = {
       id: '1',
       timestamp: testDate.getTime(),
@@ -42,8 +44,9 @@ describe('LogEntryComponent', () => {
   });
 
   describe('time format tests', () => {
-    const testDate = new Date('2024-02-20T15:00:00Z'); // 3:00 PM UTC
-
+    // Create date in EST timezone to match jest.setup.js configuration
+    const testDate = new Date('2024-02-20T15:00:00.000Z');
+    testDate.setTime(testDate.getTime() + (testDate.getTimezoneOffset() * 60000));
     const mockLog: LogEntry = {
       id: '1',
       timestamp: testDate.getTime(),
